@@ -1,64 +1,82 @@
 #!/usr/bin/env python3
-"""Scrape unique products from a JavaScript infinite-scroll page."""
+"""Collect unique product cards from a JavaScript infinite-scroll page."""
 
 import time
 from selenium import webdriver
 
 
 def scroll_and_scrape(url, scroll_pause=2.0):
-    """Scroll to load products, then return unique product dictionaries."""
+    """Scroll through the page and return unique product dictionaries."""
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
+    options.add_experimental_option(
+        "prefs", {"profile.managed_default_content_settings.images": 2}
+    )
+    options.page_load_strategy = "eager"
 
     driver = webdriver.Chrome(options=options)
     try:
         driver.get(url)
-        time.sleep(scroll_pause)
+        height_script = (
+            "return Math.max(document.body.scrollHeight, "
+            "document.documentElement.scrollHeight);"
+        )
+        previous_height = driver.execute_script(height_script)
 
-        previous_height = 0
         while True:
             driver.execute_script(
-                "window.scrollTo(0, document.body.scrollHeight);"
+                "window.scrollTo(0, Math.max(document.body.scrollHeight, "
+                "document.documentElement.scrollHeight));"
             )
-            time.sleep(scroll_pause)
-            current_height = driver.execute_script(
-                "return document.body.scrollHeight"
-            )
-            if current_height == previous_height:
+
+            # Check for newly appended products instead of wasting the
+            # entire pause when the next batch is already available.
+            deadline = time.monotonic() + scroll_pause
+            while True:
+                current_height = driver.execute_script(height_script)
+                if current_height > previous_height:
+                    break
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                time.sleep(min(0.15, remaining))
+
+            if current_height <= previous_height:
                 break
             previous_height = current_height
 
+        # Find all matching elements at once to minimize WebDriver calls.
+        titles = driver.find_elements("css selector", "div.thumbnail a.title")
+        prices = driver.find_elements("css selector", "div.thumbnail h4.price")
+        descriptions = driver.find_elements(
+            "css selector", "div.thumbnail p.description"
+        )
+        rating_groups = driver.find_elements(
+            "css selector", "div.thumbnail .ratings"
+        )
+
         products = []
         seen = set()
-        for card in driver.find_elements("css selector", "div.thumbnail"):
-            title = card.find_element(
-                "css selector", "a.title"
-            ).get_attribute("title")
-            price = card.find_element("css selector", "h4.price").text
-            if (title, price) in seen:
+        for title_element, price_element, desc_element, rating_group in zip(
+            titles, prices, descriptions, rating_groups
+        ):
+            title = title_element.get_attribute("title")
+            price = price_element.text.strip()
+            key = (title, price)
+            if key in seen:
                 continue
+            seen.add(key)
 
-            description = card.find_element(
-                "css selector", "p.description"
-            ).text
-            rating = len(card.find_elements(
-                "css selector", ".ratings .ws-icon.ws-icon-star"
-            ))
-            if rating == 0:
-                ratings = card.find_elements(
-                    "css selector", ".ratings [data-rating]"
-                )
-                if ratings:
-                    rating = int(ratings[0].get_attribute("data-rating"))
-
-            seen.add((title, price))
             products.append({
                 "title": title,
                 "price": price,
-                "description": description,
-                "rating": rating
+                "description": desc_element.text.strip(),
+                "rating": len(rating_group.find_elements(
+                    "css selector", "p.ws-icon.ws-icon-star"
+                )),
             })
 
         return products

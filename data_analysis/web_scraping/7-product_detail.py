@@ -25,9 +25,16 @@ def scrape_product_detail(url, delay=2.0):
         description = driver.find_element(
             "css selector", ".caption p.description"
         ).text
-        rating = len(driver.find_elements(
-            "css selector", ".ratings p.ws-icon.ws-icon-star"
-        ))
+
+        stars = driver.find_elements(
+            "css selector", ".ratings .ws-icon.ws-icon-star"
+        )
+        rating = len(stars)
+        if rating == 0:
+            rating_element = driver.find_element(
+                "css selector", ".ratings [data-rating]"
+            )
+            rating = int(rating_element.get_attribute("data-rating"))
 
         return {
             "title": title,

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Scrape every unique product from an infinite-scroll page."""
+"""Scrape unique products from a JavaScript infinite-scroll page."""
 
 import time
 from selenium import webdriver
 
 
 def scroll_and_scrape(url, scroll_pause=2.0):
-    """Scroll until all products load and return unique product records."""
+    """Scroll to load products, then return unique product dictionaries."""
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
@@ -17,43 +17,43 @@ def scroll_and_scrape(url, scroll_pause=2.0):
         driver.get(url)
         time.sleep(scroll_pause)
 
-        previous_height = driver.execute_script(
-            "return document.body.scrollHeight"
-        )
-
+        previous_height = 0
         while True:
             driver.execute_script(
                 "window.scrollTo(0, document.body.scrollHeight);"
             )
             time.sleep(scroll_pause)
-            new_height = driver.execute_script(
+            current_height = driver.execute_script(
                 "return document.body.scrollHeight"
             )
-
-            if new_height == previous_height:
+            if current_height == previous_height:
                 break
-            previous_height = new_height
+            previous_height = current_height
 
         products = []
         seen = set()
-
         for card in driver.find_elements("css selector", "div.thumbnail"):
             title = card.find_element(
                 "css selector", "a.title"
             ).get_attribute("title")
             price = card.find_element("css selector", "h4.price").text
-            key = (title, price)
-            if key in seen:
+            if (title, price) in seen:
                 continue
 
             description = card.find_element(
                 "css selector", "p.description"
             ).text
             rating = len(card.find_elements(
-                "css selector", ".ratings p.ws-icon.ws-icon-star"
+                "css selector", ".ratings .ws-icon.ws-icon-star"
             ))
+            if rating == 0:
+                ratings = card.find_elements(
+                    "css selector", ".ratings [data-rating]"
+                )
+                if ratings:
+                    rating = int(ratings[0].get_attribute("data-rating"))
 
-            seen.add(key)
+            seen.add((title, price))
             products.append({
                 "title": title,
                 "price": price,

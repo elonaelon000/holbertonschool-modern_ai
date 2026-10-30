@@ -70,13 +70,23 @@ def scroll_and_scrape(url, scroll_pause=2.0):
                 continue
             seen.add(key)
 
+            rating = len(rating_group.find_elements(
+                "css selector", ".ws-icon.ws-icon-star"
+            ))
+            if rating == 0:
+                rating_elements = rating_group.find_elements(
+                    "css selector", "[data-rating]"
+                )
+                if rating_elements:
+                    rating = int(
+                        rating_elements[0].get_attribute("data-rating")
+                    )
+
             products.append({
                 "title": title,
                 "price": price,
                 "description": desc_element.text.strip(),
-                "rating": len(rating_group.find_elements(
-                    "css selector", "p.ws-icon.ws-icon-star"
-                )),
+                "rating": rating,
             })
 
         return products

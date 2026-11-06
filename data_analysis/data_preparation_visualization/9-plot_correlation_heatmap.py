@@ -9,6 +9,6 @@ def plot_correlation_heatmap(df):
     plt.figure(figsize=(6, 5))
     correlation = df.select_dtypes(include='number').corr()
     sns.heatmap(correlation, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
-    plt.tight_layout()
+    plt.title('Correlation Matrix')
     plt.show()
     return None

@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-"""Plot locations of missing values in a DataFrame."""
+"""Visualize missing values in a DataFrame."""
 import matplotlib.pyplot as plt
 import numpy as np
 
 
 def plot_missingness(df):
-    """Display missing entries by row index and column name."""
+    """Show missing records at their row and column positions."""
     plt.figure(figsize=(12, 8))
-    missing_rows, missing_cols = np.where(df.isna().to_numpy())
-    plt.scatter(missing_rows, missing_cols, marker='|')
+    for i, column in enumerate(df.columns):
+        missing_rows = np.where(df[column].isna())[0]
+        if len(missing_rows):
+            plt.scatter(missing_rows, np.full(len(missing_rows), i),
+                        marker='|')
     plt.yticks(np.arange(len(df.columns)), df.columns)
-    plt.xlabel('Row Index')
-    plt.ylabel('Columns')
-    plt.title('Missing Values in DataFrame')
-    plt.xlim(0, max(len(df) - 1, 1))
-    plt.ylim(-0.5, len(df.columns) - 0.5)
     plt.tight_layout()
     plt.show()

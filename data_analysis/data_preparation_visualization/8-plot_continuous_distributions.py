@@ -27,8 +27,8 @@ def plot_continuous_distributions(df, columns_to_plot=None):
                         alpha=0.7, edgecolor='black')
         if len(values) > 1 and values.nunique() > 1:
             kde = stats.gaussian_kde(values)
-            x = np.linspace(values.min(), values.max(), 100)
-            axes[i, 0].plot(x, kde(x), color='red')
+            x = np.linspace(values.min(), values.max(), 200)
+            axes[i, 0].plot(x, kde(x), color='red', linestyle='--')
         axes[i, 0].set_title(f'{col} Histogram + KDE')
 
         if len(values) > 0:

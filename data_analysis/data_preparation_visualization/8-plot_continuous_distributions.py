@@ -32,7 +32,7 @@ def plot_continuous_distributions(df, columns_to_plot=None):
         axes[i, 0].set_title(f'{col} Histogram + KDE')
 
         if len(values) > 0:
-            axes[i, 1].boxplot(values)
+            axes[i, 1].boxplot(values, vert=False)
         axes[i, 1].set_title(f'{col} Boxplot')
 
     plt.tight_layout()

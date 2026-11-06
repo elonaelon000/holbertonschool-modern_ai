@@ -5,13 +5,12 @@ import numpy as np
 
 
 def plot_missingness(df):
-    """Show missing records at their row and column positions."""
+    """Plot missing entries by row index and column name."""
+    rows, cols = np.where(df.isna().to_numpy())
+
     plt.figure(figsize=(12, 8))
-    for i, column in enumerate(df.columns):
-        missing_rows = np.where(df[column].isna())[0]
-        if len(missing_rows):
-            plt.scatter(missing_rows, np.full(len(missing_rows), i),
-                        marker='|')
+    plt.scatter(rows, cols, marker='|')
     plt.yticks(np.arange(len(df.columns)), df.columns)
     plt.tight_layout()
     plt.show()
+    return None

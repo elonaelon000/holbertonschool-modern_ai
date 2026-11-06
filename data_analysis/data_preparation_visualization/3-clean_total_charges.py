@@ -8,7 +8,9 @@ def clean_total_charges(df, method='drop'):
     if method == 'drop':
         return df.dropna(subset=['TotalCharges'])
     if method == 'median':
-        df['TotalCharges'] = df['TotalCharges'].fillna(df['TotalCharges'].median())
+        df['TotalCharges'] = df['TotalCharges'].fillna(
+            df['TotalCharges'].median()
+        )
     elif method == 'impute':
         df['TotalCharges'] = df['TotalCharges'].fillna(
             df['MonthlyCharges'] * df['tenure']

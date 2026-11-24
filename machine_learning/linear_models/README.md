@@ -8,3 +8,4 @@ Linear regression and regularization using scikit-learn.
 - 1: Compute regression evaluation metrics (MSE, RMSE, MAE, R2).
 - 2: Create a Ridge regression model with L2 regularization.
 - 3: Create a Lasso regression model with L1 regularization.
+- 4: Explain model predictions using SHAP values.

@@ -9,4 +9,5 @@ Linear regression and regularization using scikit-learn.
 - 2: Create a Ridge regression model with L2 regularization.
 - 3: Create a Lasso regression model with L1 regularization.
 - 4: Explain model predictions using SHAP values.
+- 5: Create a logistic regression classifier.
 - 6: Create SVM classifiers with linear, polynomial and RBF kernels.

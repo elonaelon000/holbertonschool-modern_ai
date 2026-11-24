@@ -6,3 +6,4 @@ Linear regression and regularization using scikit-learn.
 
 - 0: Create an untrained linear regression model.
 - 1: Compute regression evaluation metrics (MSE, RMSE, MAE, R2).
+- 2: Create a Ridge regression model with L2 regularization.
